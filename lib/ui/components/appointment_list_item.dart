@@ -122,7 +122,10 @@ class AppointmentListItem extends StatelessWidget {
             child: appointment.queue.type == QueueType.doctorComing
                 ? BlinkText(
                     appointment.queue.name,
-                    style: const TextStyle(fontSize: 15.0),
+                    style: const TextStyle(
+                      fontSize: 15.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                     beginColor: Theme.of(context).primaryColor,
                     endColor: Colors.yellow,
                   )

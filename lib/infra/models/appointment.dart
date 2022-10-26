@@ -1,7 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:metadent_serving_app/infra/utils/logger.dart';
 
 import 'models.dart';
+
+const _dateFormat = 'dd-MM-yyyy HH:mm';
 
 class AppointmentData {
   final List<Appointment> appointments;
@@ -100,21 +103,39 @@ class Appointment {
 
   QueueState _generateState() {
     QueueState state = QueueState(type: QueueType.none, name: '');
-    if (DateTime.parse(currentTime)
-        .isAfter(DateTime.parse('$date ${slots[0].startTime}'))) {
+    final now = DateTime.parse(currentTime);
+    if (now.isAfter(
+        DateFormat(_dateFormat).parse('$date ${slots[0].startTime}'))) {
       state = QueueState(type: QueueType.delayed, name: 'Delayed');
     }
-    if ((DateTime.parse(currentTime)
-            .isBefore(DateTime.parse('$date ${slots[0].startTime}')) ||
-        DateTime.parse(currentTime)
-            .isAtSameMomentAs(DateTime.parse('$date ${slots[0].startTime}')))) {
+    if ((now.isBefore(
+            DateFormat(_dateFormat).parse('$date ${slots[0].startTime}')) ||
+        now.isAtSameMomentAs(
+            DateFormat(_dateFormat).parse('$date ${slots[0].startTime}')))) {
       state = QueueState(type: QueueType.onSchedule, name: 'On schedule');
     }
     if ((servingTime != null &&
-        (DateTime.parse(currentTime).minute -
-                DateTime.parse(servingTime!).minute) <=
-            3)) {
+        (now.minute - DateFormat(_dateFormat).parse(servingTime!).minute) <=
+            3 &&
+        (now.hour - DateFormat(_dateFormat).parse(servingTime!).hour == 0))) {
+      Logger.debug(key: 'Serving Time', data: {
+        'Current': now.toString(),
+        'Sering': now.hour - DateFormat(_dateFormat).parse(servingTime!).hour,
+        'time': DateFormat(_dateFormat).parse(servingTime!)
+      });
       state = QueueState(type: QueueType.doctorComing, name: 'Get Ready');
+    }
+    if ((servingTime != null &&
+        ((now.minute - DateFormat(_dateFormat).parse(servingTime!).minute) >
+                3 ||
+            (now.hour - DateFormat(_dateFormat).parse(servingTime!).hour >
+                0)))) {
+      state = QueueState(type: QueueType.serving, name: 'Serving');
+      Logger.debug(key: 'Serving Time', data: {
+        'Current': now.toString(),
+        'Sering': now.hour - DateFormat(_dateFormat).parse(servingTime!).hour,
+        'time': DateFormat(_dateFormat).parse(servingTime!)
+      });
     }
     return state;
   }
@@ -132,6 +153,7 @@ enum QueueType {
   delayed,
   onSchedule,
   doctorComing,
+  serving,
 }
 
 class Status {

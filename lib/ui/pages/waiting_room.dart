@@ -26,7 +26,7 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
       backgroundColor: const Color(0xffF1F5F9),
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Serving Room'),
+        title: const Text('MetaDent - Serving Room'),
       ),
       body: BlocBuilder<AppointmentsBloc, AppointmentsState>(
         builder: (context, state) {
@@ -100,15 +100,19 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                       Expanded(
                         child: ListView.builder(
                           itemCount: state.data!
-                              .where(
-                                  (appointment) => appointment.status.id == 3)
+                              .where((appointment) =>
+                                  appointment.status.id == 3 ||
+                                  appointment.queue.type ==
+                                      QueueType.doctorComing)
                               .length,
                           // shrinkWrap: true,
                           // physics: const NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) => AppointmentListItem(
                             appointment: state.data!
-                                .where(
-                                    (appointment) => appointment.status.id == 3)
+                                .where((appointment) =>
+                                    appointment.status.id == 3 ||
+                                    appointment.queue.type ==
+                                        QueueType.doctorComing)
                                 .toList()[index],
                           ),
                         ),
@@ -187,7 +191,8 @@ class _WaitingRoomPageState extends State<WaitingRoomPage> {
                                 ]),
                                 ...state.data!
                                     .where((appointment) =>
-                                        appointment.status.id == 7)
+                                        appointment.queue.type ==
+                                        QueueType.serving)
                                     .map(
                                       (e) => TableRow(
                                         children: [
